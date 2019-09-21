@@ -8,6 +8,22 @@ Vue.use(Router);
 export default new Router({
   routes: [
     {
+      path: "/",
+      redirect: "/home"
+    },
+    {
+      //第一层路由,渲染tabbar
+      path: "/",
+      component: () => import("@/views/tabBar_layout"),
+      children: [
+        {
+          path: "/home",
+          component: () => import("@/views/home")
+        }
+      ]
+    },
+    {
+      //测试vant的基本使用
       name: "test",
       path: "/test",
       //导入一个组件
@@ -19,6 +35,6 @@ export default new Router({
       path: "/login",
       component: () => import("@/views/login")
       // component: login
-    }
+    },
   ]
 });

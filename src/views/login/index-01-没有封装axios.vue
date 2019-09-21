@@ -29,30 +29,19 @@
       />
       <!-- 登录按钮 -->
       <div class="mybtn">
-        <van-button
-          :loading="isLoading"
-          loading-type="spinner"
-          type="info"
-          size="large"
-          @click="login"
-        >登录</van-button>
+        <van-button type="info" size="large" @click="login">登录</van-button>
       </div>
     </van-cell-group>
   </div>
 </template>
 
 <script>
-//请求登录接口
-import { uselogin } from "@/api/user";
-
-//导入author
-import { setAuthor } from "@/utils/author";
+import axios from "axios";
 export default {
   data() {
     return {
       mobile: "18888888888",
-      code: "246810",
-      isLoading: false //加载状态
+      code: "246810"
     };
   },
   methods: {
@@ -74,34 +63,30 @@ export default {
       this.$validator.localize("zh_CN", dict);
     },
 
-    async login() {
-      this.isLoading = true;
-      /* this.$validator.validate().then(valid => {
-        this.processLoading(valid);
-      }); */
-      let valid = await this.$validator.validate();
-      if (valid) {
-        // console.log("校验成功");
-        //异常处理
-        try {
+    login() {
+      this.$validator.validate().then(valid => {
+        if (valid) {
+          // console.log("校验成功");
           //请求登录接口，提交数据
           //通过异步请求提交数据到服务器
-          let res = await uselogin({
-            mobile: this.mobile,
-            code: this.code
+          axios({
+            url: "http://ttapi.research.itcast.cn/app/v1_0/authorizations",
+            method: "post",
+            data: {
+              mobile: this.mobile,
+              code: this.code
+            }
+          }).then(res => {
+            //接受返回的数据
+            let tokenObj = res.data.data;
+            //将token保存到localstorage中
+            window.localStorage.setItem("token", JSON.stringify(tokenObj));
+            //跳转到首页
+            this.$router.push("/home");
+            console.log(res);
           });
-          console.log(res);
-          //保存到localStorage
-          this.$store.commit("setUser", res);
-          this.$router.push("/home");
-        } catch (error) {
-          
-          // console.log("出错了...");
-          //失败时,提示用户登陆失败
-          this.$toast.fail("登录失败...");
         }
-      }
-      this.isLoading = false;
+      });
     }
   },
   mounted() {
@@ -111,8 +96,12 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.login {
-  margin-top: 46px;
+.van-nav-bar {
+  background-color: #1989fa;
+
+  .van-nav-bar__title {
+    color: #fff;
+  }
 }
 .mybtn {
   margin: 10px;
